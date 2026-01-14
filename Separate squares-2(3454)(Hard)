@@ -1,0 +1,122 @@
+from typing import List
+
+class Solution:
+    def separateSquares(self, squares: List[List[int]]) -> float:
+        events = []
+        xs = set()
+
+        for x, y, l in squares:
+            x1, x2 = x, x + l
+            y1, y2 = y, y + l
+            events.append((y1, 1, x1, x2))   # add interval
+            events.append((y2, -1, x1, x2))  # remove interval
+            xs.add(x1)
+            xs.add(x2)
+
+        xs = sorted(xs)
+        x_index = {x: i for i, x in enumerate(xs)}
+
+        # Segment Tree to maintain union length
+        n = len(xs) - 1
+        count = [0] * (4 * n)
+        length = [0] * (4 * n)
+
+        def push_up(node, l, r):
+            if count[node] > 0:
+                length[node] = xs[r + 1] - xs[l]
+            elif l == r:
+                length[node] = 0
+            else:
+                length[node] = length[node * 2] + length[node * 2 + 1]
+
+        def update(node, l, r, ql, qr, val):
+            if qr < l or r < ql:
+                return
+            if ql <= l and r <= qr:
+                count[node] += val
+                push_up(node, l, r)
+                return
+            mid = (l + r) // 2
+            update(node * 2, l, mid, ql, qr, val)
+            update(node * 2 + 1, mid + 1, r, ql, qr, val)
+            push_up(node, l, r)
+
+        events.sort()
+        prev_y = events[0][0]
+        total_area = 0
+        area_segments = []
+
+        for y, typ, x1, x2 in events:
+            dy = y - prev_y
+            if dy > 0:
+                area = length[1] * dy
+                area_segments.append((prev_y, y, length[1], area))
+                total_area += area
+            l = x_index[x1]
+            r = x_index[x2] - 1
+            update(1, 0, n - 1, l, r, typ)
+            prev_y = y
+
+        half = total_area / 2
+        acc = 0
+
+        for y1, y2, width, area in area_segments:
+            if acc + area >= half:
+                if width == 0:
+                    return float(y1)
+                return y1 + (half - acc) / width
+            acc += area
+
+        return float(prev_y)
+
+
+Description:-
+
+You are given a 2D integer array squares. Each squares[i] = [xi, yi, li] 
+represents the coordinates of the bottom-left point and the side length of a square parallel to the x-axis.
+
+Find the minimum y-coordinate value of a horizontal line such that 
+the total area covered by squares above the line equals the total area covered by squares below the line.
+
+Answers within 10-5 of the actual answer will be accepted.
+
+Note: Squares may overlap. Overlapping areas should be counted only once in this version.
+
+ 
+
+Example 1:
+
+Input: squares = [[0,0,1],[2,2,1]]
+
+Output: 1.00000
+
+Explanation:
+
+
+
+Any horizontal line between y = 1 and y = 2 results in an equal split, 
+with 1 square unit above and 1 square unit below. The minimum y-value is 1.
+
+Example 2:
+
+Input: squares = [[0,0,2],[1,1,1]]
+
+Output: 1.00000
+
+Explanation:
+
+
+
+Since the blue square overlaps with the red square, it will not be counted again.
+Thus, the line y = 1 splits the squares into two equal parts.
+
+ 
+
+Constraints:
+
+1 <= squares.length <= 5 * 104
+squares[i] = [xi, yi, li]
+squares[i].length == 3
+0 <= xi, yi <= 109
+1 <= li <= 109
+The total area of all the squares will not exceed 1015.
