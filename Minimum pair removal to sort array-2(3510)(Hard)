@@ -1,0 +1,109 @@
+from typing import List
+import heapq
+
+class Solution:
+    def minimumPairRemoval(self, nums: List[int]) -> int:
+        n = len(nums)
+        if n <= 1:
+            return 0
+
+        # Doubly linked list representation
+        left = list(range(-1, n - 1))
+        right = list(range(1, n + 1))
+        right[-1] = -1
+
+        alive = [True] * n
+
+        # Count descending violations
+        bad = 0
+        for i in range(n - 1):
+            if nums[i] > nums[i + 1]:
+                bad += 1
+
+        # Min heap of (pair_sum, index_of_left_element)
+        heap = []
+        for i in range(n - 1):
+            heapq.heappush(heap, (nums[i] + nums[i + 1], i))
+
+        ops = 0
+
+        while bad > 0:
+            pair_sum, i = heapq.heappop(heap)
+
+            # Validate pair
+            j = right[i]
+            if j == -1 or not alive[i] or not alive[j]:
+                continue
+            if nums[i] + nums[j] != pair_sum:
+                continue
+
+            # Remove old violations
+            if left[i] != -1 and nums[left[i]] > nums[i]:
+                bad -= 1
+            if nums[i] > nums[j]:
+                bad -= 1
+            if right[j] != -1 and nums[j] > nums[right[j]]:
+                bad -= 1
+
+            # Merge
+            nums[i] += nums[j]
+            alive[j] = False
+
+            rj = right[j]
+            right[i] = rj
+            if rj != -1:
+                left[rj] = i
+
+            # Add new violations
+            if left[i] != -1 and nums[left[i]] > nums[i]:
+                bad += 1
+            if rj != -1 and nums[i] > nums[rj]:
+                bad += 1
+
+            # Push updated pairs
+            if left[i] != -1:
+                heapq.heappush(heap, (nums[left[i]] + nums[i], left[i]))
+            if rj != -1:
+                heapq.heappush(heap, (nums[i] + nums[rj], i))
+
+            ops += 1
+
+        return ops
+
+
+Description:-
+Given an array nums, you can perform the following operation any number of times:
+
+Select the adjacent pair with the minimum sum in nums. 
+If multiple such pairs exist, choose the leftmost one.
+Replace the pair with their sum.
+
+Return the minimum number of operations needed to make the array non-decreasing.
+
+An array is said to be non-decreasing if each element is greater than or equal to its previous element (if it exists).
+
+ 
+
+Example 1:
+
+Input: nums = [5,2,3,1]
+Output: 2
+Explanation:
+
+The pair (3,1) has the minimum sum of 4. After replacement, nums = [5,2,4].
+The pair (2,4) has the minimum sum of 6. After replacement, nums = [5,6].
+The array nums became non-decreasing in two operations.
+
+Example 2:
+
+Input: nums = [1,2,2]
+Output: 0
+Explanation:
+
+The array nums is already sorted.
+
+ 
+Constraints:
+
+1 <= nums.length <= 105
+-109 <= nums[i] <= 109
