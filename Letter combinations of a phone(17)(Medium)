@@ -1,0 +1,68 @@
+from typing import List
+
+class Solution:
+    def letterCombinations(self, digits: str) -> List[str]:
+        # If there are no digits, return an empty list
+        if not digits:
+            return []
+
+        # Phone number mapping (digit → letters)
+        phone = {
+            "2": "abc",
+            "3": "def",
+            "4": "ghi",
+            "5": "jkl",
+            "6": "mno",
+            "7": "pqrs",
+            "8": "tuv",
+            "9": "wxyz"
+        }
+
+        # This will store all the final answers
+        result = []
+
+        # This function builds combinations step by step
+        def build(pos, current):
+            # If we used all digits, save the word
+            if pos == len(digits):
+                result.append(current)
+                return
+
+            # Get letters for the current digit
+            letters = phone[digits[pos]]
+
+            # Try each letter and move to the next digit
+            for letter in letters:
+                build(pos + 1, current + letter)
+
+        # Start building from the first digit
+        build(0, "")
+
+        # Return all possible combinations
+        return result
+
+
+
+Given a string containing digits from 2-9 inclusive, 
+return all possible letter combinations that the number could represent. Return the answer in any order.
+
+A mapping of digits to letters (just like on the telephone buttons) is given below. 
+Note that 1 does not map to any letters.
+
+
+Example 1:
+
+Input: digits = "23"
+Output: ["ad","ae","af","bd","be","bf","cd","ce","cf"]
+
+
+Example 2:
+
+Input: digits = "2"
+Output: ["a","b","c"]
+ 
+
+Constraints:
+
+1 <= digits.length <= 4
+digits[i] is a digit in the range ['2', '9'].
