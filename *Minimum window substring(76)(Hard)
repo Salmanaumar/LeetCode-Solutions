@@ -1,0 +1,22 @@
+->Core Idea: Sliding Window + Frequency Counting
+We want the smallest substring of s that contains all characters of t (including duplicates).
+
+->Key observations:
+1)Order does not matter
+2)Characters can repeat
+3)We must track how many times each character appears
+
+->So we use:
+1)A frequency map for characters in t
+2)A sliding window over s
+3)Two pointers: left and right
+
+->Key Variables Explained
+Variable	           Meaning
+freq	        Stores how many times each char in t is still needed
+count        	Number of characters matched so far
+left        	Left pointer of the window
+r	            Right pointer of the window
+minl	        Length of the smallest valid window found
+start       	Starting index of the minimum window
+
