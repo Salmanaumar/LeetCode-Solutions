@@ -1,0 +1,98 @@
+->Key Idea (Binary Search):-
+For any non-negative integer x:
+The square root of x lies in the range [0, x] (or [0, x//2] for x ≥ 2)
+We want the largest integer mid such that mid * mid ≤ x
+
+->Binary search works because:
+If mid² is too small, the answer is on the right
+If mid² is too large, the answer is on the left
+
+->This avoids:
+Floating point math
+Built-in power or sqrt functions
+Overflow issues (Python handles big ints, but logic still matters
+
+
+->Step-by-Step Algorithm:-
+
+1.Handle edge cases
+If x < 2, return x directly (√0 = 0, √1 = 1)
+
+2.Initialize binary search bounds
+left = 1
+right = x // 2
+(because √x ≤ x/2 for x ≥ 2)
+
+3.Binary search loop
+a)Compute mid
+b)Compare mid * mid with x
+*If equal → exact square root found
+*If smaller → store mid as a possible answer, move right
+*If larger → move left
+
+4.Return the stored answer
+This is the largest integer whose square ≤ x
+
+->Time & Space Complexity
+Time: O(log x)
+Space: O(1)
+
+
+->Description:-
+Given a non-negative integer x, return the square root of
+x rounded down to the nearest integer. The returned integer should be non-negative as well.
+You must not use any built-in exponent function or operator.
+For example, do not use pow(x, 0.5) in c++ or x ** 0.5 in python.
+ 
+
+Example 1:
+
+Input: x = 4
+Output: 2
+Explanation: The square root of 4 is 2, so we return 2.
+
+
+Example 2:
+
+Input: x = 8
+Output: 2
+Explanation: The square root of 8 is 2.82842..., 
+and since we round it down to the nearest integer, 2 is returned.
+ 
+
+Constraints:
+
+0 <= x <= 231 - 1
+
+
+class Solution:
+    def mySqrt(self, x: int) -> int:
+        # Edge cases:
+        # If x is 0 or 1, its square root is x itself
+        if x < 2:
+            return x
+
+        # Binary search range
+        left = 1
+        right = x // 2  # sqrt(x) cannot be greater than x//2 for x >= 2
+
+        # This will store the final answer
+        result = 0
+
+        while left <= right:
+            mid = left + (right - left) // 2
+            square = mid * mid
+
+            if square == x:
+                # Perfect square found
+                return mid
+            elif square < x:
+                # mid is a possible answer, but try to find a bigger one
+                result = mid
+                left = mid + 1
+            else:
+                # mid^2 is too large, search smaller numbers
+                right = mid - 1
+
+        # When the loop ends, result contains floor(sqrt(x))
+        return result
