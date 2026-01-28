@@ -1,0 +1,50 @@
+Description:-
+Given a binary array nums and an integer goal, 
+return the number of non-empty subarrays with a sum goal.
+
+A subarray is a contiguous part of the array.
+
+Example 1:
+Input: nums = [1,0,1,0,1], goal = 2
+Output: 4
+Explanation: The 4 subarrays are bolded and underlined below:
+[1,0,1,0,1]
+[1,0,1,0,1]
+[1,0,1,0,1]
+[1,0,1,0,1]
+
+
+Example 2:
+Input: nums = [0,0,0,0,0], goal = 0
+Output: 15
+ 
+
+Constraints:
+
+1 <= nums.length <= 3 * 104
+nums[i] is either 0 or 1.
+0 <= goal <= nums.length  
+
+
+class Solution:
+    def numSubarraysWithSum(self, nums: List[int], goal: int) -> int:
+        ps = 0                     # Prefix sum
+        count = {0: 1}             # Stores frequency of prefix sums
+        ans = 0                    # Final answer
+
+        for num in nums:
+            ps += num              # Update prefix sum
+
+            # Check if there exists a prefix sum that satisfies:
+            # current_ps - previous_ps = goal
+            if ps - goal in count:
+                ans += count[ps - goal]
+
+            # Store current prefix sum in hashmap
+            if ps in count:
+                count[ps] += 1
+            else:
+                count[ps] = 1
+
+        return ans
+
