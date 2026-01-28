@@ -1,0 +1,80 @@
+->Sliding Window Strategy
+
+1)Use two pointers: left and r
+2)Keep a count of a, b, c inside the window
+3)Expand the window by moving r
+4)Shrink the window from the left when it’s valid
+
+->Variables Explained
+Variable          	Meaning
+left	       Left boundary of the sliding window
+r	           Right boundary of the window
+count	       Frequency of 'a', 'b', 'c' in the window
+res          Total number of valid substrings
+
+
+Step-by-Step Logic
+1. Initialize
+left = 0
+count = {'a': 0, 'b': 0, 'c': 0}
+res = 0
+
+2. Expand window (right pointer)
+count[s[r]] += 1
+**We include the new character into the window.
+
+3. Check if window is valid
+while count['a'] > 0 and count['b'] > 0 and count['c'] > 0:
+This means:
+**The window contains at least one of each character
+
+4. Count substrings
+res += len(s) - r
+Why this works:
+a)Any substring starting at left
+b)Ending at r, r+1, r+2, ..., last index
+c)Will still contain a, b, and c
+
+So we count them all at once 🚀
+
+5. Shrink from the left
+count[s[left]] -= 1
+left += 1
+**This helps find new smaller valid windows.
+
+->Time & Space Complexity
+Time: O(n) (each pointer moves at most n times)
+Space: O(1) (only 3 characters)
+
+->Fully Commented Code
+class Solution:
+    def numberOfSubstrings(self, s: str) -> int:
+        left = 0
+        count = {'a': 0, 'b': 0, 'c': 0}
+        res = 0
+
+        # Expand the window using right pointer
+        for r in range(len(s)):
+            count[s[r]] += 1
+
+            # When window contains at least one 'a', 'b', and 'c'
+            while count['a'] > 0 and count['b'] > 0 and count['c'] > 0:
+                # All substrings starting at left and ending at r or later are valid
+                res += len(s) - r
+
+                # Shrink the window from the left
+                count[s[left]] -= 1
+                left += 1
+
+        return res
+
+
+Example Walkthrough
+Input:
+s = "abcabc"
+
+At r = 2 ("abc"):
+1)Valid window found
+2)Add len(s) - 2 = 4
+Then window shrinks and repeats — total becomes 10
+
