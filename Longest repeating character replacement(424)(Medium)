@@ -1,3 +1,27 @@
+class Solution:
+    def characterReplacement(self, s: str, k: int) -> int:
+        n = len(s)              # Length of the string
+        ans = 0                 # Stores the maximum valid window length
+        freq = {}               # Frequency map of characters in the window
+        l = 0                   # Left pointer of sliding window
+        mf = 0                  # Maximum frequency of any character in the window
+
+        # Right pointer moves from left to right
+        for r in range(n):
+            ch = s[r]                           # Current character
+            freq[ch] = freq.get(ch, 0) + 1      # Increase frequency
+            mf = max(mf, freq[ch])              # Update max frequency
+
+            # If replacements needed > k, shrink window from left
+            while (r - l + 1) - mf > k:
+                lc = s[l]                       # Leftmost character
+                freq[lc] -= 1                   # Decrease its frequency
+                l += 1                          # Move left pointer
+
+            # Update answer with current valid window size
+            ans = max(ans, r - l + 1)
+
+        return ans
 
 
 Description:-
