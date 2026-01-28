@@ -20,3 +20,95 @@ r	            Right pointer of the window
 minl	        Length of the smallest valid window found
 start       	Starting index of the minimum window
 
+->Step-by-Step Logic
+1. Build frequency map of t
+freq = {}
+for ch in t:
+    freq[ch] = freq.get(ch, 0) + 1
+Example:
+t = "ABC"
+freq = {'A':1, 'B':1, 'C':1}
+
+2. Expand the window (right pointer)
+For each character s[r]:
+1)If it exists in freq:
+      a)If we still need it (freq[s[r]] > 0), increment count
+      b)Decrease freq[s[r]]
+2)If it does not exist, mark it with -1 (extra characters)
+This allows:
+a)Extra characters to exist in the window
+b)Correct handling of duplicates
+
+
+3. Valid window condition
+while count == len(t):
+This means:
+*All required characters (including duplicates) are included
+Now we:
+a)Update minimum window
+b)Try shrinking from the left
+
+
+4. Shrink the window (left pointer)
+
+a)Restore frequency of s[left]
+b)If a required character becomes missing (freq[s[left]] > 0):
+    ^^Decrease count
+c)Move left forward
+
+
+5. Final result
+
+a)If no valid window found → return ""
+b)Otherwise → return substring using start and minl
+
+->Time & Space Complexity
+Time: O(m + n)
+Space: O(n) (frequency map)
+
+
+class Solution:
+    def minWindow(self, s: str, t: str) -> str:
+        # Edge case
+        if not s or not t:
+            return ""
+
+        # Frequency map for characters in t
+        freq = {}
+        for ch in t:
+            freq[ch] = freq.get(ch, 0) + 1
+
+        left = 0                      # Left pointer of window
+        minl = float('inf')           # Minimum window length
+        count = 0                     # Number of matched characters
+        start = 0                     # Start index of minimum window
+
+        # Right pointer expands the window
+        for r in range(len(s)):
+            # If current character is needed
+            if s[r] in freq:
+                if freq[s[r]] > 0:
+                    count += 1
+                freq[s[r]] -= 1
+            else:
+                # Mark extra characters
+                freq[s[r]] = -1
+
+            # When all characters of t are included
+            while count == len(t):
+                # Update minimum window
+                if r - left + 1 < minl:
+                    minl = r - left + 1
+                    start = left
+
+                # Shrink from the left
+                freq[s[left]] += 1
+                if freq[s[left]] > 0:
+                    count -= 1
+                left += 1
+
+        # If no valid window was found
+        if minl == float('inf'):
+            return ""
+        else:
+            return s[start:start + minl]
