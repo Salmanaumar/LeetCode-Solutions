@@ -1,12 +1,10 @@
-Description:-
-Assume you are an awesome parent and want to give your 
-children some cookies. But, you should give each child at most one cookie.
+Assume you are an awesome parent and want to give your children some cookies.
+But, you should give each child at most one cookie.
 
-Each child i has a greed factor g[i], which is the minimum 
-size of a cookie that the child will be content with; 
-and each cookie j has a size s[j]. If s[j] >= g[i], we can assign the cookie 
-j to the child i, and the child i will be content. Your goal is to maximize
-the number of your content children and output the maximum number.
+Each child i has a greed factor g[i], which is the minimum size of a cookie 
+that the child will be content with; and each cookie j has a size s[j]. 
+If s[j] >= g[i], we can assign the cookie j to the child i, and the child i will be content. 
+Your goal is to maximize the number of your content children and output the maximum number.
 
  
 Example 1:
@@ -31,4 +29,39 @@ Constraints:
 0 <= s.length <= 3 * 104
 1 <= g[i], s[j] <= 231 - 1
 
+->Key idea (Greedy)
+To maximize the number of content children:
+1)Give the smallest possible cookie that can satisfy the least greedy child
+2)Don’t waste big cookies on small greed factors
+So:
+1)Sort children’s greed factors g
+2)Sort cookie sizes s
+3)Use two pointers to match them
+
+->Why this works
+1)If the smallest cookie can’t satisfy the least greedy child, it can’t satisfy any other child either → skip the child
+2)If it can, assign it and move on
+This greedy choice is optimal.
+
+class Solution:
+    def findContentChildren(self, g: List[int], s: List[int]) -> int:
+        # Sort greed factors and cookie sizes
+        g.sort()
+        s.sort()
+
+        child = 0   # pointer for children
+        cookie = 0  # pointer for cookies
+        content = 0
+
+        # Try to assign cookies to children
+        while child < len(g) and cookie < len(s):
+            # If the cookie satisfies the child's greed
+            if s[cookie] >= g[child]:
+                content += 1      # child is content
+                child += 1        # move to next child
+                cookie += 1       # use next cookie
+            else:
+                cookie += 1       # cookie too small, try a bigger one
+
+        return content
 
