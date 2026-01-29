@@ -30,3 +30,24 @@ Constraints:
 intervals[i].length == 2
 -5 * 104 <= starti < endi <= 5 * 104
 
+
+class Solution:
+    def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:  # function to remove minimum overlapping intervals
+        
+        ends = []  # list to store intervals as (end, start)
+
+        for s, e in intervals:              # loop through each interval
+            ends.append((e, s))             # store end first for easy sorting
+
+        ends.sort()                         # sort intervals by end time
+
+        count = 0                           # counter for removed intervals
+        last_end = ends[0][0]               # end time of the first interval (kept)
+
+        for e, s in ends[1:]:               # iterate over remaining intervals
+            if s < last_end:                # check if current interval overlaps
+                count += 1                  # overlap found → remove this interval
+            else:
+                last_end = e                # no overlap → update last end time
+
+        return count                        # return total removed intervals
