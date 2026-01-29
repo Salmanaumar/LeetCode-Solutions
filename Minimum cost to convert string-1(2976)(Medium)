@@ -51,22 +51,82 @@ original[i], changed[i] are lowercase English letters.
 original[i] != changed[i]
 
 class Solution:
-    def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:  # function to remove minimum overlapping intervals
+    def minimumCost(self, source: str, target: str,
+                    original: List[str], changed: List[str], cost: List[int]) -> int:
         
-        ends = []  # list to store intervals as (end, start)
+        INF = 10**18
+        n = 26
+        
+        dist = [[INF] * n for _ in range(n)]
+        for i in range(n):
+            dist[i][i] = 0
+        
+        for o, c, w in zip(original, changed, cost):
+            u = ord(o) - ord('a')
+            v = ord(c) - ord('a')
+            dist[u][v] = min(dist[u][v], w)
+        
+        for k in range(n):
+            for i in range(n):
+                for j in range(n):
+                    if dist[i][k] + dist[k][j] < dist[i][j]:
+                        dist[i][j] = dist[i][k] + dist[k][j]
+        
+        total_cost = 0
+        for s, t in zip(source, target):
+            if s == t:
+                continue
+            u = ord(s) - ord('a')
+            v = ord(t) - ord('a')
+            if dist[u][v] == INF:
+                return -1
+            total_cost += dist[u][v]
+        
+        return total_cost
 
-        for s, e in intervals:              # loop through each interval
-            ends.append((e, s))             # store end first for easy sorting
 
-        ends.sort()                         # sort intervals by end time
 
-        count = 0                           # counter for removed intervals
-        last_end = ends[0][0]               # end time of the first interval (kept)
-
-        for e, s in ends[1:]:               # iterate over remaining intervals
-            if s < last_end:                # check if current interval overlaps
-                count += 1                  # overlap found → remove this interval
-            else:
-                last_end = e                # no overlap → update last end time
-
-        return count                        # return total removed intervals
+Code with comment's:-
+class Solution:
+    def minimumCost(self, source: str, target: str,
+                    original: List[str], changed: List[str], cost: List[int]) -> int:
+        
+        INF = 10**18                              # large value to represent infinity
+        n = 26                                   # number of lowercase English letters
+        
+        # distance matrix where dist[i][j] = minimum cost to convert char i to char j
+        dist = [[INF] * n for _ in range(n)]
+        
+        # cost to convert a character to itself is 0
+        for i in range(n):
+            dist[i][i] = 0
+        
+        # fill direct conversion costs
+        for o, c, w in zip(original, changed, cost):
+            u = ord(o) - ord('a')                # convert original char to index
+            v = ord(c) - ord('a')                # convert changed char to index
+            dist[u][v] = min(dist[u][v], w)      # keep minimum cost if duplicates exist
+        
+        # Floyd–Warshall algorithm to find all-pairs shortest paths
+        for k in range(n):                       # intermediate character
+            for i in range(n):                   # start character
+                for j in range(n):               # end character
+                    if dist[i][k] + dist[k][j] < dist[i][j]:
+                        dist[i][j] = dist[i][k] + dist[k][j]
+        
+        total_cost = 0                           # total cost to convert source to target
+        
+        # compute cost character by character
+        for s, t in zip(source, target):
+            if s == t:                           # no cost if characters already match
+                continue
+            
+            u = ord(s) - ord('a')                # source character index
+            v = ord(t) - ord('a')                # target character index
+            
+            if dist[u][v] == INF:                # conversion impossible
+                return -1
+            
+            total_cost += dist[u][v]             # add minimum conversion cost
+        
+        return total_cost                        # return final minimum cost
