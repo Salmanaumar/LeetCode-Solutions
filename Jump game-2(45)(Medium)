@@ -1,0 +1,69 @@
+Description:-
+You are given a 0-indexed array of integers nums of length n. 
+You are initially positioned at index 0.
+
+Each element nums[i] represents the maximum length of a forward jump from index i. 
+In other words, if you are at index i, you can jump to any index (i + j) where:
+0 <= j <= nums[i] and
+i + j < n
+
+Return the minimum number of jumps to reach index n - 1. 
+The test cases are generated such that you can reach index n - 1.
+
+ 
+
+Example 1:
+Input: nums = [2,3,1,1,4]
+Output: 2
+Explanation: The minimum number of jumps to reach the last index is 2.
+Jump 1 step from index 0 to 1, then 3 steps to the last index.
+
+
+Example 2:
+Input: nums = [2,3,0,1,4]
+Output: 2
+ 
+
+Constraints:
+
+1 <= nums.length <= 104
+0 <= nums[i] <= 1000
+It's guaranteed that you can reach nums[n - 1].
+
+class Solution:
+    def jump(self, nums: List[int]) -> int:
+        j = 0
+        f = 0
+        c = 0
+        n = len(nums)
+
+        for i in range(n - 1):
+            f = max(f, nums[i] + i)
+            if i == c:
+                j += 1
+                c = f
+
+        return j
+
+
+
+code with comments:-
+class Solution:
+    def jump(self, nums: List[int]) -> int:
+        j = 0      # number of jumps taken
+        f = 0      # farthest index reachable so far
+        c = 0      # end of the current jump range
+        n = len(nums)
+
+        # We don't need to jump from the last index
+        for i in range(n - 1):
+
+            # Update the farthest position we can reach
+            f = max(f, nums[i] + i)
+
+            # If we have reached the end of the current jump range
+            if i == c:
+                j += 1        # we must make a jump
+                c = f         # update the range for the next jump
+
+        return j
