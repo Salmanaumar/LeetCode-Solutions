@@ -1,0 +1,245 @@
+Description:-
+You are given two 0-indexed strings source and target, both of length n and 
+consisting of lowercase English characters. You are also given two 0-indexed 
+string arrays original and changed, and an integer array cost, where cost[i] 
+represents the cost of converting the string original[i] to the string changed[i].
+
+You start with the string source. In one operation, you can pick a substring x 
+from the string, and change it to y at a cost of z if there exists any index j 
+such that cost[j] == z, original[j] == x, and changed[j] == y. You are allowed
+to do any number of operations, but any pair of operations must satisfy either of these two conditions:
+
+The substrings picked in the operations are source[a..b] and source[c..d] with
+either b < c or d < a. In other words, the indices picked in both operations are disjoint.
+
+
+The substrings picked in the operations are source[a..b] and source[c..d] with 
+a == c and b == d. In other words, the indices picked in both operations are identical.
+Return the minimum cost to convert the string source to the string target 
+using any number of operations. If it is impossible to convert source to target, return -1.
+
+Note that there may exist indices i, j such that original[j] == original[i] and changed[j] == changed[i].
+
+ 
+
+Example 1:
+Input: source = "abcd", target = "acbe", original = ["a","b","c","c","e","d"],
+changed = ["b","c","b","e","b","e"], cost = [2,5,5,1,2,20]
+Output: 28
+Explanation: To convert "abcd" to "acbe", do the following operations:
+- Change substring source[1..1] from "b" to "c" at a cost of 5.
+- Change substring source[2..2] from "c" to "e" at a cost of 1.
+- Change substring source[2..2] from "e" to "b" at a cost of 2.
+- Change substring source[3..3] from "d" to "e" at a cost of 20.
+The total cost incurred is 5 + 1 + 2 + 20 = 28. 
+It can be shown that this is the minimum possible cost.
+
+
+Example 2:
+Input: source = "abcdefgh", target = "acdeeghh", original = ["bcd","fgh","thh"], 
+changed = ["cde","thh","ghh"], cost = [1,3,5]
+Output: 9
+Explanation: To convert "abcdefgh" to "acdeeghh", do the following operations:
+- Change substring source[1..3] from "bcd" to "cde" at a cost of 1.
+- Change substring source[5..7] from "fgh" to "thh" at a cost of 3. 
+We can do this operation because indices [5,7] are disjoint with indices picked in the first operation.
+
+- Change substring source[5..7] from "thh" to "ghh" at a cost of 5.
+We can do this operation because indices [5,7] are disjoint with indices picked in the first operation, 
+and identical with indices picked in the second operation.
+
+The total cost incurred is 1 + 3 + 5 = 9.
+It can be shown that this is the minimum possible cost.
+
+
+Example 3:
+Input: source = "abcdefgh", target = "addddddd", original = ["bcd","defgh"], 
+changed = ["ddd","ddddd"], cost = [100,1578]
+Output: -1
+Explanation: It is impossible to convert "abcdefgh" to "addddddd".
+If you select substring source[1..3] as the first operation to change "abcdefgh" to "adddefgh", 
+you cannot select substring source[3..7] as the second operation because it has a common index, 3, with the first operation.
+
+If you select substring source[3..7] as the first operation to change "abcdefgh" to "abcddddd",
+you cannot select substring source[1..3] as the second operation because it has a common index, 3, with the first operation.
+ 
+
+Constraints:
+
+1 <= source.length == target.length <= 1000
+source, target consist only of lowercase English characters.
+1 <= cost.length == original.length == changed.length <= 100
+1 <= original[i].length == changed[i].length <= source.length
+original[i], changed[i] consist only of lowercase English characters.
+original[i] != changed[i]
+1 <= cost[i] <= 106
+
+->High-level idea (before code)
+1)We can apply operations only on disjoint substrings or the same exact substring
+2)This becomes a DP on string index
+3)At each index i, we either:
+      a)Keep the character if source[i] == target[i]
+      b)Apply a valid substring transformation starting at i
+4)We precompute minimum cost to transform one substring to another using Floyd–Warshall on strings
+
+->Why this works
+1)Floyd–Warshall allows chaining conversions on the same substring
+2)DP ensures operations are either:
+      a)disjoint (move forward), or
+      b)identical (same substring rewritten)
+3)Efficient enough because:
+      a)substrings ≤ 200
+      b)n ≤ 1000
+
+->Complexity
+1)Floyd–Warshall: O(K³) where K ≤ 200
+2)DP: O(n * K)
+3)Total: acceptable for constraints
+
+
+class Solution:
+    def minimumCost(self, source: str, target: str,
+                    original: List[str], changed: List[str], cost: List[int]) -> int:
+
+        from collections import defaultdict
+
+        n = len(source)
+        INF = 10**18
+
+        mp = {}
+        for o, c, z in zip(original, changed, cost):
+            if (o, c) not in mp:
+                mp[(o, c)] = z
+            else:
+                mp[(o, c)] = min(mp[(o, c)], z)
+
+        subs = set()
+        for o, c in mp:
+            subs.add(o)
+            subs.add(c)
+
+        subs = list(subs)
+        idx = {s: i for i, s in enumerate(subs)}
+        m = len(subs)
+
+        dist = [[INF] * m for _ in range(m)]
+        for i in range(m):
+            dist[i][i] = 0
+
+        for (o, c), z in mp.items():
+            dist[idx[o]][idx[c]] = min(dist[idx[o]][idx[c]], z)
+
+        for k in range(m):
+            for i in range(m):
+                for j in range(m):
+                    if dist[i][k] + dist[k][j] < dist[i][j]:
+                        dist[i][j] = dist[i][k] + dist[k][j]
+
+        by_len = defaultdict(list)
+        for s in subs:
+            by_len[len(s)].append(s)
+
+        dp = [INF] * (n + 1)
+        dp[n] = 0
+
+        for i in range(n - 1, -1, -1):
+            if source[i] == target[i]:
+                dp[i] = dp[i + 1]
+
+            for L in by_len:
+                if i + L > n:
+                    continue
+
+                s1 = source[i:i + L]
+                s2 = target[i:i + L]
+
+                if s1 not in idx or s2 not in idx:
+                    continue
+
+                cst = dist[idx[s1]][idx[s2]]
+                if cst == INF:
+                    continue
+
+                dp[i] = min(dp[i], cst + dp[i + L])
+
+        return dp[0] if dp[0] != INF else -1
+
+
+code with comments:-
+class Solution:
+    def minimumCost(self, source: str, target: str,
+                    original: List[str], changed: List[str], cost: List[int]) -> int:
+
+        from collections import defaultdict
+
+        n = len(source)                          # Length of source / target
+        INF = 10**18                             # Large value representing infinity
+
+        # Step 1: Store minimum cost for each (original -> changed) mapping
+        mp = {}
+        for o, c, z in zip(original, changed, cost):
+            if (o, c) not in mp:
+                mp[(o, c)] = z
+            else:
+                mp[(o, c)] = min(mp[(o, c)], z)
+
+        # Step 2: Collect all unique substrings involved in transformations
+        subs = set()
+        for o, c in mp:
+            subs.add(o)
+            subs.add(c)
+
+        subs = list(subs)                        # Convert set to list
+        idx = {s: i for i, s in enumerate(subs)}# Map substring to index
+        m = len(subs)                            # Total unique substrings
+
+        # Step 3: Initialize distance matrix for Floyd–Warshall
+        dist = [[INF] * m for _ in range(m)]
+        for i in range(m):
+            dist[i][i] = 0                       # Cost to convert substring to itself
+
+        for (o, c), z in mp.items():
+            dist[idx[o]][idx[c]] = min(dist[idx[o]][idx[c]], z)
+
+        # Step 4: Floyd–Warshall to allow multi-step conversions
+        for k in range(m):
+            for i in range(m):
+                for j in range(m):
+                    if dist[i][k] + dist[k][j] < dist[i][j]:
+                        dist[i][j] = dist[i][k] + dist[k][j]
+
+        # Step 5: Group substrings by their length (optimization to avoid TLE)
+        by_len = defaultdict(list)
+        for s in subs:
+            by_len[len(s)].append(s)
+
+        # Step 6: DP array where dp[i] = min cost to convert source[i:]
+        dp = [INF] * (n + 1)
+        dp[n] = 0                                # Base case: no cost beyond string end
+
+        # Step 7: Fill DP from right to left
+        for i in range(n - 1, -1, -1):
+
+            # Option 1: No operation if characters already match
+            if source[i] == target[i]:
+                dp[i] = dp[i + 1]
+
+            # Option 2: Try all valid substring lengths starting at index i
+            for L in by_len:
+                if i + L > n:
+                    continue
+
+                s1 = source[i:i + L]             # Substring from source
+                s2 = target[i:i + L]             # Corresponding substring from target
+
+                if s1 not in idx or s2 not in idx:
+                    continue
+
+                cost_transform = dist[idx[s1]][idx[s2]]
+                if cost_transform == INF:
+                    continue
+
+                dp[i] = min(dp[i], cost_transform + dp[i + L])
+
+        return dp[0] if dp[0] != INF else -1      # Return result or -1 if impossible
+
