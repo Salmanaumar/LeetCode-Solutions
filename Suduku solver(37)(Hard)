@@ -1,0 +1,153 @@
+Description:-
+Write a program to solve a Sudoku puzzle by filling the empty cells.
+
+A sudoku solution must satisfy all of the following rules:
+Each of the digits 1-9 must occur exactly once in each row.
+Each of the digits 1-9 must occur exactly once in each column.
+Each of the digits 1-9 must occur exactly once in each of the 9 3x3 sub-boxes of the grid.
+The '.' character indicates empty cells.
+
+ 
+
+Example 1:
+Input: board = [["5","3",".",".","7",".",".",".","."],
+["6",".",".","1","9","5",".",".","."],
+[".","9","8",".",".",".",".","6","."],
+["8",".",".",".","6",".",".",".","3"],
+["4",".",".","8",".","3",".",".","1"],
+["7",".",".",".","2",".",".",".","6"],
+[".","6",".",".",".",".","2","8","."],
+[".",".",".","4","1","9",".",".","5"],
+[".",".",".",".","8",".",".","7","9"]]
+
+Output: [["5","3","4","6","7","8","9","1","2"],
+["6","7","2","1","9","5","3","4","8"],
+["1","9","8","3","4","2","5","6","7"],
+["8","5","9","7","6","1","4","2","3"],
+["4","2","6","8","5","3","7","9","1"],
+["7","1","3","9","2","4","8","5","6"],
+["9","6","1","5","3","7","2","8","4"],
+["2","8","7","4","1","9","6","3","5"],
+["3","4","5","2","8","6","1","7","9"]]
+Explanation: The input board is shown above and the only valid solution is shown below:
+
+
+ 
+
+Constraints:
+
+board.length == 9
+board[i].length == 9
+board[i][j] is a digit or '.'.
+It is guaranteed that the input board has only one solution.
+
+
+class Solution:
+    def solveSudoku(self, board: List[List[str]]) -> None:
+        """
+        Do not return anything, modify board in-place instead.
+        """
+        rows=[set() for i in range(9)]
+        cols=[set() for i in range(9)]
+        boxes=[set() for i in range(9)]
+        for r in range(9):
+            for c in range(9):
+                if board[r][c]!=".":
+                    num=board[r][c]
+                    rows[r].add(num)
+                    cols[c].add(num)
+                    boxes[(r//3)*3+(c//3)].add(num)
+        def bt(r,c):
+            if r==9:
+                return True
+            if c==9:
+                return bt(r+1,0)
+            if board[r][c]!=".":
+                return bt(r,c+1)
+            boxid=(r//3)*3+(c//3)
+            for num in "123456789":
+                if num not in rows[r] and num not in cols[c] and num not in boxes[boxid]:
+                    board[r][c]=num
+                    rows[r].add(num)
+                    cols[c].add(num)
+                    boxes[boxid].add(num)
+                    if bt(r,c+1):
+                        return True
+                    board[r][c]="."
+                    rows[r].remove(num)
+                    cols[c].remove(num)
+                    boxes[boxid].remove(num)
+            return False
+        bt(0,0)
+
+
+code with comments:-
+class Solution:
+    def solveSudoku(self, board: List[List[str]]) -> None:
+        """
+        Do not return anything, modify board in-place instead.
+        """
+
+        # Sets to track used numbers in each row
+        rows = [set() for i in range(9)]
+        
+        # Sets to track used numbers in each column
+        cols = [set() for i in range(9)]
+        
+        # Sets to track used numbers in each 3x3 box
+        boxes = [set() for i in range(9)]
+
+        # Fill the sets with the already placed numbers
+        for r in range(9):
+            for c in range(9):
+                if board[r][c] != ".":
+                    num = board[r][c]
+                    rows[r].add(num)                      # Add to row set
+                    cols[c].add(num)                      # Add to column set
+                    boxes[(r // 3) * 3 + (c // 3)].add(num)  # Add to box set
+
+        # Backtracking function
+        def bt(r, c):
+            
+            # If all rows are processed, Sudoku is solved
+            if r == 9:
+                return True
+            
+            # If end of column is reached, move to next row
+            if c == 9:
+                return bt(r + 1, 0)
+            
+            # If cell is already filled, move to next cell
+            if board[r][c] != ".":
+                return bt(r, c + 1)
+
+            # Get the box index for the current cell
+            boxid = (r // 3) * 3 + (c // 3)
+
+            # Try placing digits from 1 to 9
+            for num in "123456789":
+                
+                # Check if number can be placed
+                if num not in rows[r] and num not in cols[c] and num not in boxes[boxid]:
+                    
+                    # Place the number
+                    board[r][c] = num
+                    rows[r].add(num)
+                    cols[c].add(num)
+                    boxes[boxid].add(num)
+
+                    # Move to next cell
+                    if bt(r, c + 1):
+                        return True
+
+                    # Backtrack (remove the number)
+                    board[r][c] = "."
+                    rows[r].remove(num)
+                    cols[c].remove(num)
+                    boxes[boxid].remove(num)
+
+            # If no number fits, return False
+            return False
+
+        # Start backtracking from the first cell
+        bt(0, 0)
