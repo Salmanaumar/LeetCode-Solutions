@@ -1,0 +1,137 @@
+You are given an integer array nums of length n.
+
+A trionic subarray is a contiguous subarray nums[l...r] 
+(with 0 <= l < r < n) for which there exist indices l < p < q < r such that:
+
+nums[l...p] is strictly increasing,
+nums[p...q] is strictly decreasing,
+nums[q...r] is strictly increasing.
+Return the maximum sum of any trionic subarray in nums.
+
+ 
+
+Example 1:
+Input: nums = [0,-2,-1,-3,0,2,-1]
+Output: -4
+Explanation:
+Pick l = 1, p = 2, q = 3, r = 5:
+
+nums[l...p] = nums[1...2] = [-2, -1] is strictly increasing (-2 < -1).
+nums[p...q] = nums[2...3] = [-1, -3] is strictly decreasing (-1 > -3)
+nums[q...r] = nums[3...5] = [-3, 0, 2] is strictly increasing (-3 < 0 < 2).
+Sum = (-2) + (-1) + (-3) + 0 + 2 = -4.
+
+
+Example 2:
+Input: nums = [1,4,2,7]
+Output: 14
+Explanation:
+Pick l = 0, p = 1, q = 2, r = 3:
+
+nums[l...p] = nums[0...1] = [1, 4] is strictly increasing (1 < 4).
+nums[p...q] = nums[1...2] = [4, 2] is strictly decreasing (4 > 2).
+nums[q...r] = nums[2...3] = [2, 7] is strictly increasing (2 < 7).
+Sum = 1 + 4 + 2 + 7 = 14.
+ 
+
+Constraints:
+
+4 <= n = nums.length <= 105
+-109 <= nums[i] <= 109
+It is guaranteed that at least one trionic subarray exists
+
+
+from typing import List
+
+class Solution:
+    def maxSumTrionic(self, nums: List[int]) -> int:
+        INF = float("-inf")
+
+        inc = INF
+        dec = INF
+        tri = INF
+        ans = INF
+
+        for i in range(1, len(nums)):
+            new_inc = INF
+            new_dec = INF
+            new_tri = INF
+
+            if nums[i] > nums[i - 1]:
+                if inc != INF:
+                    new_inc = max(new_inc, inc + nums[i])
+                new_inc = max(new_inc, nums[i - 1] + nums[i])
+
+                if tri != INF:
+                    new_tri = max(new_tri, tri + nums[i])
+                if dec != INF:
+                    new_tri = max(new_tri, dec + nums[i])
+
+            elif nums[i] < nums[i - 1]:
+                if dec != INF:
+                    new_dec = max(new_dec, dec + nums[i])
+                if inc != INF:
+                    new_dec = max(new_dec, inc + nums[i])
+
+            inc, dec, tri = new_inc, new_dec, new_tri
+            ans = max(ans, tri)
+
+        return ans
+
+
+code without comments:-
+
+class Solution:
+    def maxSumTrionic(self, nums: List[int]) -> int:
+        INF = float("-inf")
+
+        # inc  -> strictly increasing subarray sum ending here
+        # dec  -> increasing then decreasing sum ending here
+        # tri  -> increasing -> decreasing -> increasing sum ending here
+        inc = INF
+        dec = INF
+        tri = INF
+
+        ans = INF
+
+        for i in range(1, len(nums)):
+            new_inc = INF
+            new_dec = INF
+            new_tri = INF
+
+            if nums[i] > nums[i - 1]:
+                # --- increasing phase ---
+                # extend previous increasing
+                if inc != INF:
+                    new_inc = max(new_inc, inc + nums[i])
+                # start new increasing using pair (i-1, i)
+                new_inc = max(new_inc, nums[i - 1] + nums[i])
+
+                # --- third phase (final increasing) ---
+                # extend existing trionic
+                if tri != INF:
+                    new_tri = max(new_tri, tri + nums[i])
+                # transition from decreasing -> final increasing
+                if dec != INF:
+                    new_tri = max(new_tri, dec + nums[i])
+
+            elif nums[i] < nums[i - 1]:
+                # --- decreasing phase ---
+                # extend decreasing
+                if dec != INF:
+                    new_dec = max(new_dec, dec + nums[i])
+                # start decreasing after an increasing phase
+                if inc != INF:
+                    new_dec = max(new_dec, inc + nums[i])
+
+            # if equal, all states reset (remain -inf)
+
+            inc, dec, tri = new_inc, new_dec, new_tri
+            ans = max(ans, tri)
+
+        return ans
+
+
+
+
+
