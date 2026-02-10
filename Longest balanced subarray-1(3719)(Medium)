@@ -1,0 +1,101 @@
+You are given an integer array nums.
+
+A subarray is called balanced if the number of distinct even numbers 
+in the subarray is equal to the number of distinct odd numbers.
+
+Return the length of the longest balanced subarray.
+
+ 
+Example 1:
+Input: nums = [2,5,4,3]
+Output: 4
+Explanation:
+The longest balanced subarray is [2, 5, 4, 3].
+It has 2 distinct even numbers [2, 4] and 2 distinct odd numbers [5, 3]. Thus, the answer is 4.
+
+
+Example 2:
+Input: nums = [3,2,2,5,4]
+Output: 5
+Explanation:
+The longest balanced subarray is [3, 2, 2, 5, 4].
+It has 2 distinct even numbers [2, 4] and 2 distinct odd numbers [3, 5]. Thus, the answer is 5.
+
+
+Example 3:
+Input: nums = [1,2,3,2]
+Output: 3
+Explanation:
+The longest balanced subarray is [2, 3, 2].
+It has 1 distinct even number [2] and 1 distinct odd number [3]. Thus, the answer is 3.
+ 
+
+Constraints:
+
+1 <= nums.length <= 1500
+1 <= nums[i] <= 105
+
+
+from collections import defaultdict
+
+class Solution:
+    def longestBalanced(self, nums: List[int]) -> int:
+        n = len(nums)
+        ans = 0
+
+        for i in range(n):
+            freq = defaultdict(int)
+            evenDistinct = 0
+            oddDistinct = 0
+
+            for j in range(i, n):
+                x = nums[j]
+                freq[x] += 1
+
+                # first time this number appears in current subarray
+                if freq[x] == 1:
+                    if x % 2 == 0:
+                        evenDistinct += 1
+                    else:
+                        oddDistinct += 1
+
+                # check balanced condition
+                if evenDistinct == oddDistinct:
+                    ans = max(ans, j - i + 1)
+
+        return ans
+
+
+code with comments:-
+from typing import List
+from collections import defaultdict
+
+class Solution:
+    def longestBalanced(self, nums: List[int]) -> int:
+        n = len(nums)
+        ans = 0  # stores the maximum length of balanced subarray found
+
+        # Try every index as starting point of subarray
+        for i in range(n):
+            freq = defaultdict(int)  # frequency map of numbers in current window
+            evenDistinct = 0         # count of distinct even numbers
+            oddDistinct = 0          # count of distinct odd numbers
+
+            # Extend the subarray from i to the right
+            for j in range(i, n):
+                x = nums[j]
+                freq[x] += 1
+
+                # If this number appears for the first time in this subarray
+                # update distinct even/odd counters
+                if freq[x] == 1:
+                    if x % 2 == 0:
+                        evenDistinct += 1
+                    else:
+                        oddDistinct += 1
+
+                # A subarray is balanced if distinct even == distinct odd
+                if evenDistinct == oddDistinct:
+                    ans = max(ans, j - i + 1)
+
+        return ans
